@@ -1,722 +1,575 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Network - Protect Earth</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>简约博客</title>
     <style>
+        /* ===== 全局重置 & 变量 ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         :root {
-            --primary: #2e7d32;
-            --secondary: #4caf50;
-            --accent: #8bc34a;
-            --light: #e8f5e9;
-            --dark: #1b5e20;
-            --text: #333333;
-            --white: #ffffff;
+            --bg: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text: #1a1a1a;
+            --text-secondary: #555;
+            --border: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.06);
+            --card-bg: #ffffff;
+            --input-bg: #f5f5f5;
+            --input-border: #ddd;
+            --accent: #1a1a1a;
+            --transition: 0.35s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg: #111111;
+            --bg-secondary: #1c1c1c;
+            --text: #e8e8e8;
+            --text-secondary: #aaa;
+            --border: #2a2a2a;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --card-bg: #1a1a1a;
+            --input-bg: #222;
+            --input-border: #333;
+            --accent: #f0f0f0;
         }
 
         body {
-            background-color: var(--light);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
             color: var(--text);
-            line-height: 1.6;
+            transition: background var(--transition), color var(--transition);
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        header {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            color: var(--white);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        /* ===== 密码锁 ===== */
+        .lock-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .lock-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
 
+        .lock-box {
+            max-width: 380px;
+            width: 100%;
+            padding: 48px 36px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px var(--shadow);
+            text-align: center;
+            transition: background var(--transition), border var(--transition), box-shadow var(--transition);
+        }
+
+        .lock-box .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .lock-box h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .lock-box p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .lock-box input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text);
+            outline: none;
+            transition: border var(--transition), background var(--transition), color var(--transition);
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .lock-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .lock-box .error-msg {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 12px;
+            min-height: 20px;
+            transition: opacity 0.2s;
+        }
+
+        .lock-box .error-msg.hidden {
+            opacity: 0;
+        }
+
+        .lock-box button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background var(--transition), color var(--transition), transform 0.15s;
+        }
+
+        .lock-box button:hover {
+            transform: scale(1.01);
+        }
+        .lock-box button:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== 主容器 ===== */
         .container {
-            width: 90%;
-            max-width: 1200px;
+            max-width: 780px;
+            width: 100%;
             margin: 0 auto;
+            padding: 20px 0 60px;
+            display: none;
         }
 
-        .nav-container {
+        .container.visible {
+            display: block;
+        }
+
+        /* ===== 头部 ===== */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 16px 0 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 12px;
+            transition: border var(--transition);
         }
 
-        .logo {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.8rem;
-            font-weight: 700;
+            gap: 14px;
         }
 
-        .logo i {
-            font-size: 2rem;
-        }
-
-        nav ul {
+        .header-left .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
             display: flex;
-            list-style: none;
-        }
-
-        nav ul li {
-            margin-left: 2rem;
-        }
-
-        nav ul li a {
-            color: var(--white);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem 0;
-            position: relative;
-        }
-
-        nav ul li a:hover {
-            color: var(--accent);
-        }
-
-        nav ul li a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: var(--accent);
-            transition: width 0.3s ease;
-        }
-
-        nav ul li a:hover::after {
-            width: 100%;
-        }
-
-        .hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2073&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: var(--white);
-        }
-
-        .hero-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--accent);
-            color: var(--white);
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn:hover {
-            background-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        section {
-            padding: 5rem 0;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title h2 {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .section-title h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background-color: var(--accent);
-            border-radius: 2px;
-        }
-
-        .section-title p {
-            color: var(--text);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-
-        .about-img {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .about-img img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.5s ease;
-        }
-
-        .about-img:hover img {
-            transform: scale(1.05);
-        }
-
-        .about-text h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark);
-        }
-
-        .about-text p {
-            margin-bottom: 1.5rem;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 2rem 1rem;
-            background-color: var(--white);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-10px);
-        }
-
-        .stat-item i {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .stat-item h3 {
-            font-size: 2.5rem;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-item p {
-            color: var(--text);
-        }
-
-        .initiatives {
-            background-color: var(--white);
-        }
-
-        .initiatives-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-        }
-
-        .initiative-card {
-            background-color: var(--light);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .initiative-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .initiative-img {
-            height: 200px;
-            overflow: hidden;
-        }
-
-        .initiative-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .initiative-card:hover .initiative-img img {
-            transform: scale(1.1);
-        }
-
-        .initiative-content {
-            padding: 1.5rem;
-        }
-
-        .initiative-content h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: var(--dark);
-        }
-
-        .initiative-content p {
-            margin-bottom: 1.5rem;
-        }
-
-        .cta {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            color: var(--white);
-            text-align: center;
-            padding: 5rem 0;
-        }
-
-        .cta h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .cta p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta .btn {
-            background-color: var(--white);
-            color: var(--primary);
-        }
-
-        .cta .btn:hover {
-            background-color: var(--accent);
-            color: var(--white);
-        }
-
-        footer {
-            background-color: var(--dark);
-            color: var(--white);
-            padding: 3rem 0 1rem;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .footer-column h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            padding-bottom: 10px;
-        }
-
-        .footer-column h3::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 40px;
-            height: 2px;
-            background-color: var(--accent);
-        }
-
-        .footer-column p {
-            margin-bottom: 1rem;
-        }
-
-        .footer-links {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-links li a {
-            color: var(--light);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-links li a:hover {
-            color: var(--accent);
-            padding-left: 5px;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .social-links a {
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(255, 255, 255, 0.1);
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text);
+            border: 1px solid var(--border);
+            transition: background var(--transition), border var(--transition), color var(--transition);
+        }
+
+        .header-left .blog-title {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .header-left .blog-title span {
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: 14px;
+            margin-left: 6px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            color: var(--white);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .social-links a:hover {
-            background-color: var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .mobile-menu {
-            display: none;
-            font-size: 1.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text);
+            font-size: 20px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--transition), border var(--transition), color var(--transition), transform 0.2s;
+        }
+        .theme-toggle:hover {
+            transform: rotate(12deg);
+            background: var(--border);
         }
 
-        @media (max-width: 992px) {
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .initiatives-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .footer-content {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        /* ===== 文章列表 ===== */
+        .posts {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
         }
 
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
+        .post-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 32px;
+            transition: background var(--transition), border var(--transition), box-shadow var(--transition), transform 0.2s;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px var(--shadow);
+        }
+
+        .post-card .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .post-card .post-meta .tag {
+            background: var(--bg-secondary);
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            transition: background var(--transition), border var(--transition), color var(--transition);
+        }
+
+        .post-card h2 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        .post-card h2 a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .post-card h2 a:hover {
+            color: var(--text-secondary);
+        }
+
+        .post-card .excerpt {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .post-card .read-more {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 2px;
+            transition: border var(--transition), color var(--transition);
+        }
+        .post-card .read-more:hover {
+            border-color: var(--text);
+        }
+
+        /* ===== 页脚 ===== */
+        .footer {
+            margin-top: 56px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: border var(--transition), color var(--transition);
+        }
+        .footer .dots {
+            letter-spacing: 4px;
+            font-size: 10px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 600px) {
+            .lock-box {
+                padding: 36px 24px;
             }
-            
-            .hero p {
-                font-size: 1.1rem;
+            .container {
+                padding: 0 0 40px;
             }
-            
-            nav ul {
+            .header {
+                padding: 12px 0 24px;
+                margin-bottom: 28px;
+            }
+            .header-left .blog-title {
+                font-size: 17px;
+            }
+            .header-left .blog-title span {
                 display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background-color: var(--primary);
-                flex-direction: column;
-                padding: 1rem 0;
-                text-align: center;
-                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
             }
-            
-            nav ul.active {
-                display: flex;
+            .post-card {
+                padding: 20px 18px;
             }
-            
-            nav ul li {
-                margin: 0;
-                padding: 0.8rem 0;
+            .post-card h2 {
+                font-size: 19px;
             }
-            
-            .mobile-menu {
-                display: block;
+            .post-card .excerpt {
+                font-size: 14px;
             }
-            
-            .initiatives-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .footer-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats {
-                grid-template-columns: 1fr;
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
             }
         }
 
-        /* Animation for stats counter */
-        .counter {
-            transition: all 0.5s ease;
+        @media (max-width: 400px) {
+            .lock-box {
+                padding: 28px 16px;
+            }
+            .lock-box h1 {
+                font-size: 19px;
+            }
+            .post-card {
+                padding: 16px 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container nav-container">
-            <div class="logo">
-                <i class="fas fa-seedling"></i>
-                <span>Green Network</span>
-            </div>
-            <nav>
-                <div class="mobile-menu">
-                    <i class="fas fa-bars"></i>
-                </div>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#initiatives">Initiatives</a></li>
-                    <li><a href="#get-involved">Get Involved</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="container hero-content">
-            <h1>Protect Our Planet, Preserve Our Future</h1>
-            <p>Join the global movement to create a sustainable world through conservation, education, and community action.</p>
-            <a href="#get-involved" class="btn">Join Our Network</a>
+    <!-- ===== 密码锁 ===== -->
+    <div class="lock-overlay" id="lockOverlay" role="dialog" aria-modal="true">
+        <div class="lock-box">
+            <span class="icon">🔒</span>
+            <h1>输入密码</h1>
+            <p>请输入密码以继续浏览</p>
+            <input type="password" id="passwordInput" placeholder="· · · · · ·" maxlength="20" autofocus />
+            <div class="error-msg hidden" id="errorMsg">密码错误，请重试</div>
+            <button id="unlockBtn">解锁</button>
         </div>
-    </section>
+    </div>
 
-    <!-- About Section -->
-    <section id="about">
-        <div class="container">
-            <div class="section-title">
-                <h2>About Green Network</h2>
-                <p>We are a global community dedicated to environmental protection and sustainable development.</p>
-            </div>
-            <div class="about-content">
-                <div class="about-img">
-                    <img src="https://images.unsplash.com/photo-1507591064344-4c6ce005b128?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Team planting trees">
-                </div>
-                <div class="about-text">
-                    <h3>Our Mission</h3>
-                    <p>Green Network is committed to creating a sustainable future by protecting natural ecosystems, promoting renewable energy, and empowering communities to take environmental action.</p>
-                    <p>Founded in 2010, we've grown from a small grassroots organization to an international network with over 50,000 members across 120 countries.</p>
-                    <p>Our approach combines scientific research, community engagement, and policy advocacy to address the most pressing environmental challenges of our time.</p>
-                    <a href="#" class="btn">Learn More</a>
-                </div>
-            </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <i class="fas fa-tree"></i>
-                    <h3 class="counter" data-target="2500000">0</h3>
-                    <p>Trees Planted</p>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-users"></i>
-                    <h3 class="counter" data-target="50000">0</h3>
-                    <p>Active Members</p>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-globe-americas"></i>
-                    <h3 class="counter" data-target="120">0</h3>
-                    <p>Countries Reached</p>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-recycle"></i>
-                    <h3 class="counter" data-target="1500">0</h3>
-                    <p>Cleanup Projects</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- ===== 主内容 ===== -->
+    <div class="container" id="mainContainer">
 
-    <!-- Initiatives Section -->
-    <section class="initiatives" id="initiatives">
-        <div class="container">
-            <div class="section-title">
-                <h2>Our Initiatives</h2>
-                <p>Discover the key programs and projects we're implementing to protect our planet.</p>
-            </div>
-            <div class="initiatives-grid">
-                <div class="initiative-card">
-                    <div class="initiative-img">
-                        <img src="https://dialogue.earth/content/uploads/2021/04/lessons-from-the-rush-to-reforest-china-dialogue-2400x1599.jpg" alt="Reforestation">
-                    </div>
-                    <div class="initiative-content">
-                        <h3>Global Reforestation</h3>
-                        <p>Planting millions of trees worldwide to restore ecosystems, combat climate change, and protect biodiversity.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
-                </div>
-                <div class="initiative-card">
-                    <div class="initiative-img">
-                        <img src="https://images.unsplash.com/photo-1621451537084-482c73073a0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" alt="Ocean Conservation">
-                    </div>
-                    <div class="initiative-content">
-                        <h3>Ocean Conservation</h3>
-                        <p>Protecting marine ecosystems, reducing plastic pollution, and promoting sustainable fishing practices.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
-                </div>
-                <div class="initiative-card">
-                    <div class="initiative-img">
-                        <img src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80" alt="Renewable Energy">
-                    </div>
-                    <div class="initiative-content">
-                        <h3>Renewable Energy</h3>
-                        <p>Promoting solar, wind, and other clean energy sources to reduce dependence on fossil fuels.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-left">
+                <div class="avatar">✎</div>
+                <div class="blog-title">
+                    墨言<span>· 随笔</span>
                 </div>
             </div>
-        </div>
-    </section>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="切换黑白主题" title="切换主题">
+                    🌙
+                </button>
+            </div>
+        </header>
 
-    <!-- CTA Section -->
-    <section class="cta" id="get-involved">
-        <div class="container">
-            <h2>Join Our Global Movement</h2>
-            <p>Together, we can create a sustainable future for generations to come. Every action counts, no matter how small.</p>
-            <a href="#" class="btn">Become a Member</a>
-        </div>
-    </section>
+        <!-- 文章列表 -->
+        <main class="posts">
 
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>Green Network</h3>
-                    <p>We are dedicated to protecting our planet through collaborative action, education, and sustainable solutions.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
+            <article class="post-card">
+                <div class="post-meta">
+                    <time datetime="2026-06-28">2026.06.28</time>
+                    <span class="tag">生活</span>
                 </div>
-                <div class="footer-column">
-                    <h3>Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#initiatives">Initiatives</a></li>
-                        <li><a href="#get-involved">Get Involved</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
+                <h2><a href="#">晨间散步随想</a></h2>
+                <p class="excerpt">
+                    清晨六点，街道还未完全醒来。露水挂在叶尖上，折射出细碎的光。走过那棵老槐树时，
+                    忽然觉得，日子就该这样慢慢地过——不必追赶什么，也不必被什么追赶。
+                </p>
+                <a href="#" class="read-more">继续阅读 →</a>
+            </article>
+
+            <article class="post-card">
+                <div class="post-meta">
+                    <time datetime="2026-06-20">2026.06.20</time>
+                    <span class="tag">阅读</span>
                 </div>
-                <div class="footer-column">
-                    <h3>Our Programs</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Reforestation</a></li>
-                        <li><a href="#">Ocean Cleanup</a></li>
-                        <li><a href="#">Wildlife Protection</a></li>
-                        <li><a href="#">Climate Education</a></li>
-                        <li><a href="#">Sustainable Agriculture</a></li>
-                    </ul>
+                <h2><a href="#">重读《瓦尔登湖》</a></h2>
+                <p class="excerpt">
+                    梭罗说：“我到林中去，因为我希望谨慎地生活。” 第三次翻开这本书，才真正读懂
+                    那些关于孤独与丰盈的句子。有时候，远离喧嚣，反而能听见自己内心的声音。
+                </p>
+                <a href="#" class="read-more">继续阅读 →</a>
+            </article>
+
+            <article class="post-card">
+                <div class="post-meta">
+                    <time datetime="2026-06-12">2026.06.12</time>
+                    <span class="tag">摄影</span>
                 </div>
-                <div class="footer-column">
-                    <h3>Contact Us</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Copper Creek Drive, New York</p>
-                    <p><i class="fas fa-phone"></i> +1 (312) 171-0771</p>
-                    <p><i class="fas fa-envelope"></i> support@greennetwork.org</p>
+                <h2><a href="#">黑白之外的色彩</a></h2>
+                <p class="excerpt">
+                    这周拍了一组胶片，冲洗出来后发现，最动人的往往不是那些鲜艳的色调，
+                    而是光影交界处的那一抹灰度。就像生活，纯粹的快乐与悲伤都很少，
+                    大部分时候，我们活在中间的灰色地带。
+                </p>
+                <a href="#" class="read-more">继续阅读 →</a>
+            </article>
+
+            <article class="post-card">
+                <div class="post-meta">
+                    <time datetime="2026-06-05">2026.06.05</time>
+                    <span class="tag">随笔</span>
                 </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2025 Green Network. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+                <h2><a href="#">关于「足够」</a></h2>
+                <p class="excerpt">
+                    拥有的东西越多，反而越觉得匮乏。最近在练习一种「足够」的心态：
+                    一杯茶的温度足够，一段沉默的陪伴足够，一篇写了一半的文字也足够。
+                    不必事事求全，留一点余地给呼吸。
+                </p>
+                <a href="#" class="read-more">继续阅读 →</a>
+            </article>
+
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <span class="dots">· · ·</span>
+            <p style="margin-top: 8px;">© 2026 墨言 · 用文字记录日常</p>
+        </footer>
+
+    </div>
 
     <script>
-        // Mobile Menu Toggle
-        document.querySelector('.mobile-menu').addEventListener('click', function() {
-            document.querySelector('nav ul').classList.toggle('active');
-        });
+        (function() {
+            'use strict';
 
-        // Counter Animation
-        function animateCounters() {
-            const counters = document.querySelectorAll('.counter');
-            const speed = 200; // The lower the slower
-            
-            counters.forEach(counter => {
-                const target = +counter.getAttribute('data-target');
-                const count = +counter.innerText;
-                
-                const inc = target / speed;
-                
-                if(count < target) {
-                    counter.innerText = Math.ceil(count + inc);
-                    setTimeout(animateCounters, 1);
+            // ===== DOM 引用 =====
+            const lockOverlay = document.getElementById('lockOverlay');
+            const passwordInput = document.getElementById('passwordInput');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const mainContainer = document.getElementById('mainContainer');
+            const themeToggle = document.getElementById('themeToggle');
+
+
+            const CORRECT_ENCODED = 'MTIzNDU2MDAwTG0=';
+
+            // ===== 解锁逻辑 =====
+            function unlock() {
+                const entered = passwordInput.value.trim();
+
+                const encodedInput = btoa(entered);
+                if (encodedInput === CORRECT_ENCODED) {
+
+                    lockOverlay.classList.add('hidden');
+                    mainContainer.classList.add('visible');
+                    errorMsg.classList.add('hidden');
+                    passwordInput.value = '';
+                    document.querySelector('.header-left .blog-title').focus();
                 } else {
-                    counter.innerText = target;
+                    // 失败
+                    errorMsg.classList.remove('hidden');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    // 抖动提示
+                    passwordInput.style.animation = 'shake 0.3s ease';
+                    setTimeout(() => {
+                        passwordInput.style.animation = '';
+                    }, 300);
+                }
+            }
+
+            // 回车解锁
+            passwordInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    unlock();
                 }
             });
-        }
 
-        // Initialize counters when page loads
-        window.addEventListener('load', animateCounters);
+            unlockBtn.addEventListener('click', unlock);
 
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if(targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if(targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
-                    
-                    document.querySelector('nav ul').classList.remove('active');
+            // 自动聚焦
+            window.addEventListener('load', function() {
+                passwordInput.focus();
+            });
+
+            // ===== 注入 shake 动画 =====
+            const styleShake = document.createElement('style');
+            styleShake.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-8px); }
+                    75% { transform: translateX(8px); }
+                }
+            `;
+            document.head.appendChild(styleShake);
+
+            // ESC 清除错误
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !errorMsg.classList.contains('hidden')) {
+                    errorMsg.classList.add('hidden');
+                    passwordInput.focus();
                 }
             });
-        });
+
+            // ===== 主题切换（保留） =====
+            function getCurrentTheme() {
+                return document.documentElement.getAttribute('data-theme') || 'light';
+            }
+
+            function setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+                localStorage.setItem('blog-theme', theme);
+            }
+
+            const savedTheme = localStorage.getItem('blog-theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                setTheme('light');
+            }
+
+            themeToggle.addEventListener('click', function() {
+                const current = getCurrentTheme();
+                setTheme(current === 'light' ? 'dark' : 'light');
+            });
+
+            console.log('🔐 博客已加载');
+        })();
     </script>
-</body>
 
+</body>
 </html>
